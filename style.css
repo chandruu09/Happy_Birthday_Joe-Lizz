@@ -1138,7 +1138,7 @@ body {
     font-weight: bold;
     box-shadow: 0 0 15px rgba(255, 75, 43, 0.6);
     transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
-    animation: buttonBounce 1.8s infinite ease-in-out;
+/*     animation: buttonBounce 1.8s infinite ease-in-out; */
 }
 
 /* Pulse Glow Effect */
