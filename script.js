@@ -96,4 +96,11 @@
 
     close.addEventListener('click', function () {
         boxmail.classList.remove('active')
+
     })
+    close.addEventListener('click', function () {
+        boxmail.classList.remove('active')
+    })
+    document.getElementById("btn__surprise").addEventListener("click", function () {
+    window.location.href = "celebration.html";
+});
