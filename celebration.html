@@ -3,216 +3,290 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Heart Animation</title>
+<title>Birthday Cake Animation Stepwise</title>
 <style>
-  body, html {
-    margin:0; padding:0; overflow:hidden; background: #111;
-    display:flex; justify-content:center; align-items:center; height:100vh;
-    color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  #container {
+  /* Background decoration - soft gradient and floating balloons */
+  body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f9e2e7, #d99ca7);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    color: #8a3b3b;
   }
-  canvas {
-    display:block;
-    background: transparent;
+
+  /* Floating balloons behind everything */
+  .balloon {
+    position: fixed;
+    bottom: -120px;
+    width: 40px;
+    height: 60px;
+    background: radial-gradient(circle at 50% 40%, #ff8a8a, #b34747);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    animation: floatUp linear infinite;
+    opacity: 0.7;
+    z-index: 0;
   }
-  #birthdayText {
+  .balloon:nth-child(1) { left: 10%; animation-duration: 14s; animation-delay: 0s; }
+  .balloon:nth-child(2) { left: 25%; animation-duration: 11s; animation-delay: 3s; background: radial-gradient(circle at 50% 40%, #6a11cb, #2575fc); }
+  .balloon:nth-child(3) { left: 40%; animation-duration: 13s; animation-delay: 1s; background: radial-gradient(circle at 50% 40%, #43cea2, #185a9d); }
+  .balloon:nth-child(4) { left: 60%; animation-duration: 12s; animation-delay: 2s; background: radial-gradient(circle at 50% 40%, #f7971e, #ffd200); }
+  .balloon:nth-child(5) { left: 75%; animation-duration: 15s; animation-delay: 0s; background: radial-gradient(circle at 50% 40%, #ff5f6d, #ffc371); }
+  .balloon:nth-child(6) { left: 90%; animation-duration: 10s; animation-delay: 4s; background: radial-gradient(circle at 50% 40%, #6a11cb, #2575fc); }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+    50% { transform: translateY(-40vh) rotate(5deg); opacity: 1; }
+    100% { transform: translateY(-100vh) rotate(-5deg); opacity: 0; }
+  }
+
+  /* Cake container */
+  #cake-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin-bottom: 25px;
+    background: #f2c1c1;
+    border-radius: 160px 160px 40px 40px / 160px 160px 40px 40px;
+    box-shadow: 0 8px 14px rgba(179, 71, 71, 0.6);
+    overflow: visible;
+    z-index: 10;
+  }
+  #cake {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #ff9999 0%, #cc6666 100%);
+    border-radius: inherit;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Cake slices (6 pieces) */
+  .slice {
     position: absolute;
+    width: 160px;
+    height: 160px;
+    top: 80px;
+    left: 80px;
+    background: linear-gradient(45deg, #ff6666, #cc3333);
+    clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
+    transform-origin: 50% 50%;
+    border-radius: 0 160px 160px 0 / 0 160px 160px 0;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3);
+    z-index: 2;
+    transition: opacity 0.5s ease;
+  }
+  #slice1 { transform: rotate(0deg); background: linear-gradient(45deg, #ff9999, #cc6666); }
+  #slice2 { transform: rotate(60deg); background: linear-gradient(45deg, #ff8080, #b34747); }
+  #slice3 { transform: rotate(120deg); background: linear-gradient(45deg, #ff6666, #993333); }
+  #slice4 { transform: rotate(180deg); background: linear-gradient(45deg, #ff4d4d, #800000); }
+  #slice5 { transform: rotate(240deg); background: linear-gradient(45deg, #ff3333, #660000); }
+  #slice6 { transform: rotate(300deg); background: linear-gradient(45deg, #ff1a1a, #4d0000); }
+
+  /* Candles */
+  .candle {
+    position: absolute;
+    width: 14px;
+    height: 60px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: inset 0 0 6px #bbb;
+    top: 10px;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+    z-index: 15;
+  }
+  .wick {
+    position: absolute;
+    width: 3px;
+    height: 12px;
+    background: #333;
+    top: 0;
+    left: 5px;
+    border-radius: 1.5px;
+  }
+  .flame {
+    position: absolute;
+    top: -18px;
+    left: 4px;
+    width: 8px;
+    height: 18px;
+    background: radial-gradient(circle at center, #ffdb4d 0%, #ff9900 60%, transparent 90%);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    animation: flicker 1.5s infinite;
+    filter: drop-shadow(0 0 5px #ff9900);
+    transition: opacity 0.8s ease;
+  }
+  @keyframes flicker {
+    0%, 100% { transform: scale(1) translateY(0); opacity: 1; }
+    50% { transform: scale(1.1) translateY(-2px); opacity: 0.8; }
+  }
+  /* Candle positions */
+  .candle:nth-child(1) { left: 60px; }
+  .candle:nth-child(2) { left: 120px; }
+  .candle:nth-child(3) { left: 180px; }
+  .candle:nth-child(4) { left: 240px; }
+
+  /* Buttons styling */
+  button {
+    padding: 14px 32px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    background: #b34747;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(179, 71, 71, 0.6);
+    transition: background-color 0.3s ease;
+    z-index: 20;
+    user-select: none;
+    margin: 8px;
+  }
+  button:hover:enabled {
+    background: #993333;
+  }
+  button:disabled {
+    background: #666;
+    cursor: not-allowed;
+  }
+
+  /* Happy birthday text */
+  #birthday-text {
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 3rem;
-    font-weight: bold;
-    color: white;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 4rem;
+    font-weight: 900;
+    color: #ff3366;
+    text-shadow:
+      0 0 4px #ff3366,
+      0 0 10px #ff6699,
+      0 0 10px #ff6699,
+      0 0 10px #ff6699,
+      0 0 10px #ff3366;
     opacity: 0;
-    text-shadow: 0 0 10px white, 0 0 20px #f00;
+    user-select: none;
+    pointer-events: none;
+    transition: opacity 1.5s ease, transform 1.5s ease;
+    z-index: 100;
+  }
+  #birthday-text.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3);
   }
 </style>
 </head>
 <body>
-<div id="container">
-  <canvas id="canvas" width="600" height="600"></canvas>
-  <div id="birthdayText">❤️ Happy Birthday ❤️</div>
+
+<!-- Background balloons -->
+<div class="balloon"></div>
+<div class="balloon"></div>
+<div class="balloon"></div>
+<div class="balloon"></div>
+<div class="balloon"></div>
+<div class="balloon"></div>
+
+<!-- Step 1: Cake container -->
+<div id="cake-container">
+  <div id="cake">
+    <!-- 6 slices for cake -->
+    <div id="slice1" class="slice"></div>
+    <div id="slice2" class="slice"></div>
+    <div id="slice3" class="slice"></div>
+    <div id="slice4" class="slice"></div>
+    <div id="slice5" class="slice"></div>
+    <div id="slice6" class="slice"></div>
+
+    <!-- 4 candles -->
+    <div class="candle" style="left: 60px;">
+      <div class="wick"></div>
+      <div class="flame"></div>
+    </div>
+    <div class="candle" style="left: 120px;">
+      <div class="wick"></div>
+      <div class="flame"></div>
+    </div>
+    <div class="candle" style="left: 180px;">
+      <div class="wick"></div>
+      <div class="flame"></div>
+    </div>
+    <div class="candle" style="left: 240px;">
+      <div class="wick"></div>
+      <div class="flame"></div>
+    </div>
+  </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
+<!-- Step 3 & 4: Buttons -->
+<button id="blowButton">Blow Out Candles</button>
+<button id="cutButton" style="display:none;">Cut Cake</button>
+
+<!-- Step 6: Happy birthday text -->
+<div id="birthday-text">🎉 Happy Birthday! 🎉</div>
+
 <script>
-// Animation code will go here
-    const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const width = canvas.width;
-const height = canvas.height;
+  const blowButton = document.getElementById('blowButton');
+  const cutButton = document.getElementById('cutButton');
+  const flames = document.querySelectorAll('.flame');
+  const slices = [
+    document.getElementById('slice1'),
+    document.getElementById('slice2'),
+    document.getElementById('slice3'),
+    document.getElementById('slice4'),
+    document.getElementById('slice5'),
+    document.getElementById('slice6'),
+  ];
+  const cakeContainer = document.getElementById('cake-container');
+  const birthdayText = document.getElementById('birthday-text');
+  const balloons = document.querySelectorAll('.balloon');
 
-const birthdayText = document.getElementById('birthdayText');
+  blowButton.addEventListener('click', () => {
+    // Step 3: Stop flames (hide flames)
+    flames.forEach(f => {
+      f.style.opacity = '0';
+      f.style.animation = 'none';
+      f.style.transition = 'opacity 1s ease';
+    });
+    blowButton.disabled = true;
 
-let arrowX = -150; // arrow starts off screen on left
-let arrowY = height/2;
-let arrowStuck = false;
-let crackLength = 0;
-let splitProgress = 0;
-
-function drawHeart(x, y, size, crackProgress=0, split=0) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(size, size);
-
-  // Draw two halves with optional split offset
-  // Left half
-  ctx.beginPath();
-  ctx.fillStyle = '#b22222'; // dark red
-  ctx.shadowColor = 'rgba(255,0,0,0.7)';
-  ctx.shadowBlur = 20;
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(-0.5, -0.9, -1.5, -0.7, -1, 0);
-  ctx.bezierCurveTo(-1, 0.6 + split, 0, 1.1 + split, 0, 0);
-  ctx.fill();
-
-  // Right half
-  ctx.beginPath();
-  ctx.fillStyle = '#dc143c'; // crimson
-  ctx.shadowColor = 'rgba(255,0,0,0.7)';
-  ctx.shadowBlur = 20;
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(0.5, -0.9, 1.5, -0.7, 1, 0);
-  ctx.bezierCurveTo(1, 0.6 + split, 0, 1.1 + split, 0, 0);
-  ctx.fill();
-
-  // Draw crack (zig-zag line)
-  if(crackProgress > 0){
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 0.02;
-    ctx.beginPath();
-    let crackHeight = crackProgress * 1.2;
-    let steps = 10;
-    let stepSize = crackHeight / steps;
-    let startX = 0;
-    let startY = 0;
-
-    ctx.moveTo(startX, startY);
-    for(let i = 1; i <= steps; i++){
-      let x = (i % 2 === 0 ? 0.05 : -0.05);
-      let y = i * stepSize;
-      ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
-
-function drawArrow(x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = '#a0522d'; // sienna brown for arrow shaft
-  ctx.strokeStyle = '#5a2a0c'; // darker for edges
-
-  // Shaft
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(100, 0);
-  ctx.stroke();
-
-  // Head
-  ctx.beginPath();
-  ctx.moveTo(100, 0);
-  ctx.lineTo(80, -15);
-  ctx.lineTo(80, 15);
-  ctx.closePath();
-  ctx.fill();
-
-  // Feathers
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(10, -10);
-  ctx.lineTo(15, -5);
-  ctx.lineTo(10, 0);
-  ctx.lineTo(15, 5);
-  ctx.lineTo(10, 10);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-}
-
-// Fireworks particles
-class FireworkParticle {
-  constructor(x,y,color){
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.radius = Math.random()*3 + 2;
-    this.alpha = 1;
-    this.angle = Math.random()*Math.PI*2;
-    this.speed = Math.random()*3 + 2;
-    this.vx = Math.cos(this.angle)*this.speed;
-    this.vy = Math.sin(this.angle)*this.speed;
-  }
-  update(){
-    this.x += this.vx;
-    this.y += this.vy;
-    this.alpha -= 0.02;
-  }
-  draw(ctx){
-    ctx.save();
-    ctx.globalAlpha = this.alpha;
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-let fireworks = [];
-function spawnFireworks() {
-  let colors = ['#ff0040','#ff8000','#ffff00','#00ff40','#00ffff','#0080ff','#8000ff'];
-  for(let i = 0; i < 30; i++){
-    let color = colors[Math.floor(Math.random()*colors.length)];
-    fireworks.push(new FireworkParticle(width/2, height/3, color));
-  }
-}
-
-function drawFireworks() {
-  fireworks.forEach((f,i)=>{
-    f.update();
-    f.draw(ctx);
-    if(f.alpha <= 0) fireworks.splice(i,1);
+    // After 1 second, show cut cake button
+    setTimeout(() => {
+      blowButton.style.display = 'none';
+      cutButton.style.display = 'inline-block';
+      cutButton.disabled = false;
+    }, 1000);
   });
-}
 
-// Animation sequence
-function animate() {
-  ctx.clearRect(0, 0, width, height);
+  cutButton.addEventListener('click', () => {
+    cutButton.disabled = true;
 
-  // Draw heart in center with crack and split controlled by global vars
-  drawHeart(width/2, height/2, 150, crackLength, splitProgress);
+    // Step 4: Cut cake slices — immediately hide each slice with a quick fade
+    slices.forEach((slice, i) => {
+      // Add a small delay for nicer effect (optional)
+      setTimeout(() => {
+        slice.style.opacity = '0';
+        slice.style.transition = 'opacity 0.1s ease';
+      }, i * 100);
+    });
 
-  // Draw arrow flying in if not stuck
-  if(!arrowStuck){
-    drawArrow(arrowX, arrowY);
-    arrowX += 10;
-    if(arrowX > width/2 - 130) arrowStuck = true;
-  } else if(crackLength < 1){
-    crackLength += 0.02; // crack grows
-  } else if(splitProgress < 0.2){
-    splitProgress += 0.002; // halves split slowly
-  } else {
-    // Fireworks after split is done
-    if(fireworks.length < 30) spawnFireworks();
-    drawFireworks();
+    // Step 5: After all slices hidden, remove cake container, candles, and buttons but keep background decorations
+    setTimeout(() => {
+      cakeContainer.remove();
+      cutButton.remove();
+      blowButton.remove();
 
-    // Show birthday text glowing
-    gsap.to(birthdayText, {opacity:1, repeat:-1, yoyo:true, duration:1.5, ease:"power1.inOut"});
-  }
-
-  requestAnimationFrame(animate);
-}
-
-animate();
-
+      // Step 6: Show happy birthday text with scale up and fade in
+      birthdayText.classList.add('show');
+    }, 600);
+  });
 </script>
+
 </body>
 </html>
