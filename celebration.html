@@ -30,7 +30,7 @@
 </head>
 <body>
 <canvas id="scene"></canvas>
-<div class="message" id="msg">❤️ Happy Birthday Cuitee!! ❤️</div>
+<div class="message" id="msg">❤️ Happy Birthday ❤️</div>
 
 <script>
 const canvas = document.getElementById("scene");
@@ -39,10 +39,11 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let heartHit = false;
-let heartBroken = false;
+let crackProgress = 0;
+let halvesSeparated = false;
 let arrowX = -100;
 let arrowY = canvas.height / 2;
-let frameCount = 0;
+let halfOffset = 0;
 
 // Draw hollow heart
 function drawHeart(x, y, size, color) {
@@ -112,35 +113,49 @@ Firework.prototype.draw = function() {
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Stage 1: Heart appears
-    if (!heartBroken) {
-        drawHeart(canvas.width / 2, canvas.height / 2, 100, "red");
+    const heartX = canvas.width / 2;
+    const heartY = canvas.height / 2;
+
+    // Stage 1: Heart appears (or halves move apart)
+    if (!halvesSeparated) {
+        drawHeart(heartX, heartY, 100, "red");
+    } else {
+        drawHeart(heartX - halfOffset, heartY, 100, "red");
+        drawHeart(heartX + halfOffset, heartY, 100, "red");
     }
 
     // Stage 2: Arrow flies in
     if (!heartHit) {
         arrowX += 8;
         drawArrow(arrowX, arrowY);
-        if (arrowX > canvas.width / 2 - 50) {
+        if (arrowX > heartX - 50) {
             heartHit = true;
-            setTimeout(() => {
-                heartBroken = true;
-                document.getElementById("msg").style.opacity = 1;
-                fireworks.push(new Firework(canvas.width/2, canvas.height/2));
-            }, 500);
         }
     }
 
-    // Stage 3: Heart breaks (draw two halves)
-    if (heartBroken) {
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-0.1);
-        drawHeart(-20, 0, 100, "red");
-        ctx.rotate(0.2);
-        drawHeart(20, 0, 100, "red");
-        ctx.restore();
+    // Stage 3: Crack animation
+    if (heartHit && crackProgress < 1 && !halvesSeparated) {
+        crackProgress += 0.02;
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(heartX, heartY - 50);
+        ctx.lineTo(heartX, heartY - 50 + crackProgress * 100);
+        ctx.stroke();
 
+        // When crack completes, start separating halves
+        if (crackProgress >= 1) {
+            setTimeout(() => {
+                halvesSeparated = true;
+                document.getElementById("msg").style.opacity = 1;
+                fireworks.push(new Firework(heartX, heartY));
+            }, 300);
+        }
+    }
+
+    // Stage 4: Halves move apart + fireworks
+    if (halvesSeparated) {
+        halfOffset += 1.5; // move halves outward
         if (Math.random() < 0.1) {
             fireworks.push(new Firework(random(0, canvas.width), random(0, canvas.height / 2)));
         }
@@ -153,7 +168,6 @@ function animate() {
         if (f.particles[0].alpha <= 0) fireworks.splice(i, 1);
     });
 
-    frameCount++;
     requestAnimationFrame(animate);
 }
 
