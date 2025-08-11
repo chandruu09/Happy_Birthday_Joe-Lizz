@@ -102,5 +102,6 @@
         boxmail.classList.remove('active')
     })
     document.getElementById("btn__surprise").addEventListener("click", function () {
-    window.location.href = "celebration.html";
+    window.location.href = "index2.html";
 });
+
