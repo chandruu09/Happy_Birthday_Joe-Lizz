@@ -1,198 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Surprise!</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Heart Animation</title>
 <style>
-    body {
-        margin: 0;
-        background: black;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    canvas {
-        display: block;
-    }
-    .message {
-        position: absolute;
-        color: white;
-        font-size: clamp(28px, 6vw, 70px);
-        font-weight: bold;
-        text-align: center;
-        opacity: 0;
-        transition: opacity 1.5s ease-in;
-        text-shadow: 0 0 15px red, 0 0 30px pink;
-    }
+  body, html {
+    margin:0; padding:0; overflow:hidden; background: #111;
+    display:flex; justify-content:center; align-items:center; height:100vh;
+    color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  #container {
+    position: relative;
+  }
+  canvas {
+    display:block;
+    background: transparent;
+  }
+  #birthdayText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    opacity: 0;
+    text-shadow: 0 0 10px white, 0 0 20px #f00;
+  }
 </style>
 </head>
 <body>
-<canvas id="scene"></canvas>
-<div class="message" id="msg">❤️ Happy Birthday ❤️</div>
+<div id="container">
+  <canvas id="canvas" width="600" height="600"></canvas>
+  <div id="birthdayText">❤️ Happy Birthday ❤️</div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
 <script>
-const canvas = document.getElementById("scene");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Animation code will go here
+    const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const width = canvas.width;
+const height = canvas.height;
 
-let heartHit = false;
-let crackProgress = 0;
-let halvesSeparated = false;
-let arrowX = -100;
-let arrowY = canvas.height / 2;
-let halfOffset = 0;
+const birthdayText = document.getElementById('birthdayText');
+
+let arrowX = -150; // arrow starts off screen on left
+let arrowY = height/2;
 let arrowStuck = false;
+let crackLength = 0;
+let splitProgress = 0;
 
-// Draw a realistic heart
-function drawHeart(x, y, size, color, offsetX = 0) {
-    ctx.save();
-    ctx.translate(x + offsetX, y);
-    ctx.beginPath();
-    ctx.moveTo(0, size / 4);
-    ctx.bezierCurveTo(size / 2, -size / 2, size * 1.5, size / 3, 0, size);
-    ctx.bezierCurveTo(-size * 1.5, size / 3, -size / 2, -size / 2, 0, size / 4);
-    ctx.closePath();
-    ctx.shadowColor = "red";
-    ctx.shadowBlur = 30;
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.restore();
-}
+function drawHeart(x, y, size, crackProgress=0, split=0) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size, size);
 
-// Draw arrow
-function drawArrow(x, y) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = "gold";
-    ctx.fillRect(0, -2, 60, 4); // shaft
-    ctx.beginPath();
-    ctx.moveTo(60, 0);
-    ctx.lineTo(70, -5);
-    ctx.lineTo(70, 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-}
+  // Draw two halves with optional split offset
+  // Left half
+  ctx.beginPath();
+  ctx.fillStyle = '#b22222'; // dark red
+  ctx.shadowColor = 'rgba(255,0,0,0.7)';
+  ctx.shadowBlur = 20;
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(-0.5, -0.9, -1.5, -0.7, -1, 0);
+  ctx.bezierCurveTo(-1, 0.6 + split, 0, 1.1 + split, 0, 0);
+  ctx.fill();
 
-// Zig-zag crack drawing
-function drawCrack(x, y, size, progress) {
-    const crackHeight = size * 1.2;
-    const steps = 6;
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 3;
+  // Right half
+  ctx.beginPath();
+  ctx.fillStyle = '#dc143c'; // crimson
+  ctx.shadowColor = 'rgba(255,0,0,0.7)';
+  ctx.shadowBlur = 20;
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(0.5, -0.9, 1.5, -0.7, 1, 0);
+  ctx.bezierCurveTo(1, 0.6 + split, 0, 1.1 + split, 0, 0);
+  ctx.fill();
+
+  // Draw crack (zig-zag line)
+  if(crackProgress > 0){
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 0.02;
     ctx.beginPath();
-    ctx.moveTo(x, y); // start at arrow tip
-    for (let i = 1; i <= steps; i++) {
-        let px = x + (i % 2 === 0 ? 5 : -5);
-        let py = y + (i / steps) * crackHeight * progress;
-        ctx.lineTo(px, py);
+    let crackHeight = crackProgress * 1.2;
+    let steps = 10;
+    let stepSize = crackHeight / steps;
+    let startX = 0;
+    let startY = 0;
+
+    ctx.moveTo(startX, startY);
+    for(let i = 1; i <= steps; i++){
+      let x = (i % 2 === 0 ? 0.05 : -0.05);
+      let y = i * stepSize;
+      ctx.lineTo(x, y);
     }
     ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
-// Fireworks system
-const fireworks = [];
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-function Firework(x, y) {
-    this.particles = [];
-    for (let i = 0; i < 50; i++) {
-        this.particles.push({
-            x, y,
-            speed: random(2, 5),
-            angle: random(0, Math.PI * 2),
-            alpha: 1,
-            decay: random(0.01, 0.02),
-            color: `hsl(${random(0, 360)}, 100%, 50%)`
-        });
-    }
-}
-Firework.prototype.update = function() {
-    this.particles.forEach(p => {
-        p.x += Math.cos(p.angle) * p.speed;
-        p.y += Math.sin(p.angle) * p.speed;
-        p.alpha -= p.decay;
-    });
-};
-Firework.prototype.draw = function() {
-    this.particles.forEach(p => {
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-};
+function drawArrow(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#a0522d'; // sienna brown for arrow shaft
+  ctx.strokeStyle = '#5a2a0c'; // darker for edges
 
+  // Shaft
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(100, 0);
+  ctx.stroke();
+
+  // Head
+  ctx.beginPath();
+  ctx.moveTo(100, 0);
+  ctx.lineTo(80, -15);
+  ctx.lineTo(80, 15);
+  ctx.closePath();
+  ctx.fill();
+
+  // Feathers
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(10, -10);
+  ctx.lineTo(15, -5);
+  ctx.lineTo(10, 0);
+  ctx.lineTo(15, 5);
+  ctx.lineTo(10, 10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// Fireworks particles
+class FireworkParticle {
+  constructor(x,y,color){
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.radius = Math.random()*3 + 2;
+    this.alpha = 1;
+    this.angle = Math.random()*Math.PI*2;
+    this.speed = Math.random()*3 + 2;
+    this.vx = Math.cos(this.angle)*this.speed;
+    this.vy = Math.sin(this.angle)*this.speed;
+  }
+  update(){
+    this.x += this.vx;
+    this.y += this.vy;
+    this.alpha -= 0.02;
+  }
+  draw(ctx){
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+let fireworks = [];
+function spawnFireworks() {
+  let colors = ['#ff0040','#ff8000','#ffff00','#00ff40','#00ffff','#0080ff','#8000ff'];
+  for(let i = 0; i < 30; i++){
+    let color = colors[Math.floor(Math.random()*colors.length)];
+    fireworks.push(new FireworkParticle(width/2, height/3, color));
+  }
+}
+
+function drawFireworks() {
+  fireworks.forEach((f,i)=>{
+    f.update();
+    f.draw(ctx);
+    if(f.alpha <= 0) fireworks.splice(i,1);
+  });
+}
+
+// Animation sequence
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, width, height);
 
-    const heartX = canvas.width / 2;
-    const heartY = canvas.height / 2;
-    const heartSize = 150;
+  // Draw heart in center with crack and split controlled by global vars
+  drawHeart(width/2, height/2, 150, crackLength, splitProgress);
 
-    // Draw heart(s)
-    if (!halvesSeparated) {
-        drawHeart(heartX, heartY, heartSize, "red");
-    } else {
-        drawHeart(heartX, heartY, heartSize, "red", -halfOffset);
-        drawHeart(heartX, heartY, heartSize, "red", halfOffset);
-    }
+  // Draw arrow flying in if not stuck
+  if(!arrowStuck){
+    drawArrow(arrowX, arrowY);
+    arrowX += 10;
+    if(arrowX > width/2 - 130) arrowStuck = true;
+  } else if(crackLength < 1){
+    crackLength += 0.02; // crack grows
+  } else if(splitProgress < 0.2){
+    splitProgress += 0.002; // halves split slowly
+  } else {
+    // Fireworks after split is done
+    if(fireworks.length < 30) spawnFireworks();
+    drawFireworks();
 
-    // Arrow movement
-    if (!heartHit) {
-        arrowX += 8;
-        drawArrow(arrowX, arrowY);
-        if (arrowX > heartX - heartSize / 2) {
-            heartHit = true;
-            arrowStuck = true;
-            setTimeout(() => {
-                startCrack = true;
-            }, 500); // small pause before crack starts
-        }
-    } else if (arrowStuck && !halvesSeparated) {
-        drawArrow(heartX - heartSize / 2, arrowY);
-    }
+    // Show birthday text glowing
+    gsap.to(birthdayText, {opacity:1, repeat:-1, yoyo:true, duration:1.5, ease:"power1.inOut"});
+  }
 
-    // Crack animation
-    if (heartHit && crackProgress < 1 && !halvesSeparated) {
-        crackProgress += 0.02;
-        drawCrack(heartX, heartY, heartSize, crackProgress);
-
-        if (crackProgress >= 1) {
-            setTimeout(() => {
-                halvesSeparated = true;
-                document.getElementById("msg").style.opacity = 1;
-                fireworks.push(new Firework(heartX, heartY));
-            }, 300);
-        }
-    }
-
-    // Halves separate + fireworks
-    if (halvesSeparated) {
-        halfOffset += 1.5;
-        if (Math.random() < 0.1) {
-            fireworks.push(new Firework(random(0, canvas.width), random(0, canvas.height / 2)));
-        }
-    }
-
-    // Fireworks update/draw
-    fireworks.forEach((f, i) => {
-        f.update();
-        f.draw();
-        if (f.particles[0].alpha <= 0) fireworks.splice(i, 1);
-    });
-
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }
 
 animate();
+
 </script>
 </body>
 </html>
