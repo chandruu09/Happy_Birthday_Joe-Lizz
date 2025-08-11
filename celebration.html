@@ -20,11 +20,12 @@
     .message {
         position: absolute;
         color: white;
-        font-size: clamp(24px, 5vw, 60px);
+        font-size: clamp(28px, 6vw, 70px);
         font-weight: bold;
         text-align: center;
         opacity: 0;
         transition: opacity 1.5s ease-in;
+        text-shadow: 0 0 15px red, 0 0 30px pink;
     }
 </style>
 </head>
@@ -44,18 +45,21 @@ let halvesSeparated = false;
 let arrowX = -100;
 let arrowY = canvas.height / 2;
 let halfOffset = 0;
+let arrowStuck = false;
 
-// Draw hollow heart
-function drawHeart(x, y, size, color) {
+// Draw a realistic heart
+function drawHeart(x, y, size, color, offsetX = 0) {
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(x + offsetX, y);
     ctx.beginPath();
-    ctx.moveTo(0, -size / 2);
-    ctx.bezierCurveTo(size / 2, -size, size, 0, 0, size);
-    ctx.bezierCurveTo(-size, 0, -size / 2, -size, 0, -size / 2);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = color;
-    ctx.stroke();
+    ctx.moveTo(0, size / 4);
+    ctx.bezierCurveTo(size / 2, -size / 2, size * 1.5, size / 3, 0, size);
+    ctx.bezierCurveTo(-size * 1.5, size / 3, -size / 2, -size / 2, 0, size / 4);
+    ctx.closePath();
+    ctx.shadowColor = "red";
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = color;
+    ctx.fill();
     ctx.restore();
 }
 
@@ -65,7 +69,7 @@ function drawArrow(x, y) {
     ctx.translate(x, y);
     ctx.fillStyle = "gold";
     ctx.fillRect(0, -2, 60, 4); // shaft
-    ctx.beginPath(); // arrow head
+    ctx.beginPath();
     ctx.moveTo(60, 0);
     ctx.lineTo(70, -5);
     ctx.lineTo(70, 5);
@@ -74,7 +78,23 @@ function drawArrow(x, y) {
     ctx.restore();
 }
 
-// Firework particle system
+// Zig-zag crack drawing
+function drawCrack(x, y, size, progress) {
+    const crackHeight = size * 1.2;
+    const steps = 6;
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y); // start at arrow tip
+    for (let i = 1; i <= steps; i++) {
+        let px = x + (i % 2 === 0 ? 5 : -5);
+        let py = y + (i / steps) * crackHeight * progress;
+        ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+}
+
+// Fireworks system
 const fireworks = [];
 function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -115,35 +135,36 @@ function animate() {
 
     const heartX = canvas.width / 2;
     const heartY = canvas.height / 2;
+    const heartSize = 150;
 
-    // Stage 1: Heart appears (or halves move apart)
+    // Draw heart(s)
     if (!halvesSeparated) {
-        drawHeart(heartX, heartY, 100, "red");
+        drawHeart(heartX, heartY, heartSize, "red");
     } else {
-        drawHeart(heartX - halfOffset, heartY, 100, "red");
-        drawHeart(heartX + halfOffset, heartY, 100, "red");
+        drawHeart(heartX, heartY, heartSize, "red", -halfOffset);
+        drawHeart(heartX, heartY, heartSize, "red", halfOffset);
     }
 
-    // Stage 2: Arrow flies in
+    // Arrow movement
     if (!heartHit) {
         arrowX += 8;
         drawArrow(arrowX, arrowY);
-        if (arrowX > heartX - 50) {
+        if (arrowX > heartX - heartSize / 2) {
             heartHit = true;
+            arrowStuck = true;
+            setTimeout(() => {
+                startCrack = true;
+            }, 500); // small pause before crack starts
         }
+    } else if (arrowStuck && !halvesSeparated) {
+        drawArrow(heartX - heartSize / 2, arrowY);
     }
 
-    // Stage 3: Crack animation
+    // Crack animation
     if (heartHit && crackProgress < 1 && !halvesSeparated) {
         crackProgress += 0.02;
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(heartX, heartY - 50);
-        ctx.lineTo(heartX, heartY - 50 + crackProgress * 100);
-        ctx.stroke();
+        drawCrack(heartX, heartY, heartSize, crackProgress);
 
-        // When crack completes, start separating halves
         if (crackProgress >= 1) {
             setTimeout(() => {
                 halvesSeparated = true;
@@ -153,15 +174,15 @@ function animate() {
         }
     }
 
-    // Stage 4: Halves move apart + fireworks
+    // Halves separate + fireworks
     if (halvesSeparated) {
-        halfOffset += 1.5; // move halves outward
+        halfOffset += 1.5;
         if (Math.random() < 0.1) {
             fireworks.push(new Firework(random(0, canvas.width), random(0, canvas.height / 2)));
         }
     }
 
-    // Draw fireworks
+    // Fireworks update/draw
     fireworks.forEach((f, i) => {
         f.update();
         f.draw();
