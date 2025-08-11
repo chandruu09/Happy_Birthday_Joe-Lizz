@@ -1,99 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surprise!</title>
-    <style>
-        body {
-            margin: 0;
-            background: black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            flex-direction: column;
-            color: white;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .heart {
-            position: relative;
-            font-size: 40px;
-            animation: pulse 1.5s infinite;
-            z-index: 2;
-            text-align: center;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surprise!</title>
+<style>
+    body {
+        margin: 0;
+        background: black;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    canvas {
+        display: block;
+    }
+    .message {
+        position: absolute;
+        color: white;
+        font-size: clamp(24px, 5vw, 60px);
+        font-weight: bold;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 1.5s ease-in;
+    }
+</style>
 </head>
 <body>
-    <canvas id="fireworks"></canvas>
-    <div class="heart">❤️ Happy Birthday ❤️</div>
+<canvas id="scene"></canvas>
+<div class="message" id="msg">❤️ Happy Birthday Cuitee!! ❤️</div>
 
-    <script>
-        const canvas = document.getElementById("fireworks");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+<script>
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-        const fireworks = [];
-        function random(min, max) {
-            return Math.random() * (max - min) + min;
+let heartHit = false;
+let heartBroken = false;
+let arrowX = -100;
+let arrowY = canvas.height / 2;
+let frameCount = 0;
+
+// Draw hollow heart
+function drawHeart(x, y, size, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, -size / 2);
+    ctx.bezierCurveTo(size / 2, -size, size, 0, 0, size);
+    ctx.bezierCurveTo(-size, 0, -size / 2, -size, 0, -size / 2);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.restore();
+}
+
+// Draw arrow
+function drawArrow(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "gold";
+    ctx.fillRect(0, -2, 60, 4); // shaft
+    ctx.beginPath(); // arrow head
+    ctx.moveTo(60, 0);
+    ctx.lineTo(70, -5);
+    ctx.lineTo(70, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+// Firework particle system
+const fireworks = [];
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+function Firework(x, y) {
+    this.particles = [];
+    for (let i = 0; i < 50; i++) {
+        this.particles.push({
+            x, y,
+            speed: random(2, 5),
+            angle: random(0, Math.PI * 2),
+            alpha: 1,
+            decay: random(0.01, 0.02),
+            color: `hsl(${random(0, 360)}, 100%, 50%)`
+        });
+    }
+}
+Firework.prototype.update = function() {
+    this.particles.forEach(p => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= p.decay;
+    });
+};
+Firework.prototype.draw = function() {
+    this.particles.forEach(p => {
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+};
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Stage 1: Heart appears
+    if (!heartBroken) {
+        drawHeart(canvas.width / 2, canvas.height / 2, 100, "red");
+    }
+
+    // Stage 2: Arrow flies in
+    if (!heartHit) {
+        arrowX += 8;
+        drawArrow(arrowX, arrowY);
+        if (arrowX > canvas.width / 2 - 50) {
+            heartHit = true;
+            setTimeout(() => {
+                heartBroken = true;
+                document.getElementById("msg").style.opacity = 1;
+                fireworks.push(new Firework(canvas.width/2, canvas.height/2));
+            }, 500);
         }
-        function Firework(x, y) {
-            this.x = x;
-            this.y = y;
-            this.particles = [];
-            for (let i = 0; i < 50; i++) {
-                this.particles.push({
-                    x: x,
-                    y: y,
-                    speed: random(2, 5),
-                    angle: random(0, Math.PI * 2),
-                    alpha: 1,
-                    decay: random(0.01, 0.02),
-                    color: `hsl(${random(0, 360)}, 100%, 50%)`
-                });
-            }
+    }
+
+    // Stage 3: Heart breaks (draw two halves)
+    if (heartBroken) {
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-0.1);
+        drawHeart(-20, 0, 100, "red");
+        ctx.rotate(0.2);
+        drawHeart(20, 0, 100, "red");
+        ctx.restore();
+
+        if (Math.random() < 0.1) {
+            fireworks.push(new Firework(random(0, canvas.width), random(0, canvas.height / 2)));
         }
-        Firework.prototype.update = function () {
-            this.particles.forEach((p) => {
-                p.x += Math.cos(p.angle) * p.speed;
-                p.y += Math.sin(p.angle) * p.speed;
-                p.alpha -= p.decay;
-            });
-        };
-        Firework.prototype.draw = function () {
-            this.particles.forEach((p) => {
-                ctx.globalAlpha = p.alpha;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        };
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (Math.random() < 0.05) {
-                fireworks.push(new Firework(random(0, canvas.width), random(0, canvas.height / 2)));
-            }
-            fireworks.forEach((f, i) => {
-                f.update();
-                f.draw();
-                if (f.particles[0].alpha <= 0) fireworks.splice(i, 1);
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-    </script>
+    }
+
+    // Draw fireworks
+    fireworks.forEach((f, i) => {
+        f.update();
+        f.draw();
+        if (f.particles[0].alpha <= 0) fireworks.splice(i, 1);
+    });
+
+    frameCount++;
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
 </body>
 </html>
