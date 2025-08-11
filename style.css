@@ -1023,3 +1023,104 @@ body {
     color: white;
     z-index: 10000000000000000;
 }
+/* ========================= */
+/*  RESPONSIVE DESIGN RULES  */
+/* ========================= */
+
+/* Tablet screens (up to 1024px) */
+@media (max-width: 1024px) {
+    #wrapper {
+        padding: 10px;
+    }
+    .flag__birthday img {
+        width: 250px;
+    }
+    .content {
+        flex-direction: column;
+        align-items: center;
+    }
+    .left, .right {
+        width: 100%;
+        text-align: center;
+    }
+    .right .box__account img {
+        max-width: 200px;
+    }
+    .title h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Mobile screens (up to 768px) */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+    .flag__birthday img {
+        width: 200px;
+    }
+    .content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .title h1 {
+        font-size: 1.8rem;
+    }
+    .hat img {
+        width: 90px;
+    }
+    .btn button {
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
+    .right .box__account {
+        padding: 10px;
+    }
+    .balloon_one img, .balloon_two img {
+        width: 70px;
+    }
+    .decorate_star,
+    .decorate_flower--one img,
+    .decorate_flower--two img,
+    .decorate_flower--three img {
+        transform: scale(0.8);
+    }
+}
+
+/* Small mobile screens (up to 480px) */
+@media (max-width: 480px) {
+    .flag__birthday img {
+        width: 150px;
+    }
+    .title h1 {
+        font-size: 1.5rem;
+    }
+    .hat img {
+        width: 70px;
+    }
+    .right .box__account img {
+        max-width: 150px;
+    }
+    .btn button {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+    .balloon_one img, .balloon_two img {
+        width: 50px;
+    }
+    .decorate_bottom img,
+    .smiley__icon img {
+        width: 70px;
+    }
+    .boxMail-container {
+        flex-direction: column;
+        padding: 10px;
+    }
+    .card1, .card2 {
+        width: 100%;
+    }
+    .imageCute img, .imageCute2 img {
+        max-width: 80%;
+        height: auto;
+    }
+}
