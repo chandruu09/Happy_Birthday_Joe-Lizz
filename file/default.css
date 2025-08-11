@@ -1,0 +1,169 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-image: url('../img2.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  font-size: 14px;
+  font-family: sans-serif;
+  color: white;
+  overflow: auto;
+}
+a {
+  color: white;
+  font-size: 14px;
+}
+#main {
+  width: 100%;
+}
+#wrap {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1100px;
+  height: auto; /* let height adjust dynamically */
+  margin-top: 10px;
+  box-sizing: border-box;
+  padding: 0 10px;
+}
+#text {
+  width: 25%; /* relative width */
+  max-width: 300px;
+  height: auto;
+  left: 15%;
+  top: 80px;
+  position: absolute;
+  /* For small screens, adjust position below */
+}
+#code {
+  display: none;
+  color: rgb(196, 255, 255);
+  font-size: 1.2rem;
+  margin-top: 70px;
+  line-height: 1.5;
+  font-weight: bolder;
+}
+#clock-box {
+  position: absolute;
+  left: 5%;
+  top: 550px;
+  font-size: 28px;
+  display: none;
+}
+#clock-box a {
+  font-size: 28px;
+  text-decoration: none;
+}
+#clock {
+  margin-left: 48px;
+}
+#clock .digit {
+  font-size: 64px;
+}
+#canvas {
+  margin: 0 auto;
+  width: 100%; /* responsive */
+  max-width: 1100px;
+  height: auto; /* maintain aspect ratio */
+  display: block;
+}
+#error {
+  margin: 0 auto;
+  text-align: center;
+  margin-top: 60px;
+  display: none;
+}
+.hand {
+  cursor: pointer;
+}
+.say {
+  margin-left: 5px;
+}
+.space {
+  margin-right: 150px;
+}
+#message-box {
+  position: absolute;
+  margin-top: 450px;
+  font-size: 25px;
+  font-family: monospace;
+}
+
+/* Responsive tweaks for small devices */
+@media (max-width: 768px) {
+  #text {
+    position: relative;
+    width: 90%;
+    max-width: none;
+    left: 0;
+    top: 0;
+    margin: 20px auto;
+    height: auto;
+  }
+  #clock-box {
+    position: relative;
+    left: 0;
+    top: 0;
+    margin: 20px auto;
+    font-size: 20px;
+    text-align: center;
+  }
+  #clock {
+    margin-left: 0;
+  }
+  #clock .digit {
+    font-size: 40px;
+  }
+  #code {
+    font-size: 1rem;
+    margin-top: 30px;
+  }
+  #message-box {
+    position: relative;
+    margin-top: 20px;
+    font-size: 18px;
+  }
+}
+
+/* Extra small devices (phones) */
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+  #text {
+    font-size: 14px;
+  }
+  #clock-box {
+    font-size: 18px;
+  }
+  #clock .digit {
+    font-size: 30px;
+  }
+  #message-box {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+}
+#redirectBtn {
+  margin-top: 20px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(45deg, #ff4e50, #f9d423);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(249, 212, 35, 0.5);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#redirectBtn:hover {
+  background: linear-gradient(45deg, #f9d423, #ff4e50);
+  transform: scale(1.05);
+}
+
+#redirectBtn:focus {
+  outline: none;
+  box-shadow: 0 0 10px 3px rgba(249, 212, 35, 0.7);
+}
